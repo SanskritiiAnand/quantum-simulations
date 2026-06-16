@@ -50,4 +50,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Simply select 1 for the Entanglement workspace or 2 for the Teleportation pipeline when prompted directly in your terminal line!
+Select 1 for Entanglement workspace; 2 for Teleportation pipeline, when prompted directly in your terminal line.
