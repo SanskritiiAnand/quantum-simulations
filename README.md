@@ -50,4 +50,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Select 1 for Entanglement workspace; 2 for Teleportation pipeline, when prompted directly in your terminal line.
+Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis- when prompted, directly in your terminal line.
