@@ -8,6 +8,7 @@ def plot_simulation_results(counts: dict, title: str = "Simulation Results"):
     fig = plot_histogram(counts, title=title)
     plt.show(block=True)
 
+
 def plot_teleportation_memory(measurements: list, target_bit_index: int = 2):
     """
     Extracts a targeted bit index from shot memory strings and plots a 
@@ -24,4 +25,18 @@ def plot_teleportation_memory(measurements: list, target_bit_index: int = 2):
     plt.ylabel("Occurrences")
     plt.xticks([0, 1])
     plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show(block=True)
+
+
+from qiskit.visualization import plot_state_qsphere, plot_histogram
+
+def plot_qsphere_visualization(statevector, title: str = "Final 3-qubit state"):
+    """Renders a 3D QSphere layout displaying state probabilities and phases."""
+    fig = plot_state_qsphere(statevector)
+    fig.suptitle(title)
+    plt.show(block=True)
+
+def plot_final_verification_counts(counts: dict, title: str = "Verification of Teleported State"):
+    """Plots a traditional Qiskit multi-bar probability histogram for final counts."""
+    fig = plot_histogram(counts, title=title)
     plt.show(block=True)
