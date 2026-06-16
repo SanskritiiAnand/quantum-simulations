@@ -38,13 +38,16 @@ By initializing Alice's qubit into a superposition state and performing a comput
 ```bash
 git clone https://github.com/SanskritiiAnand/quantum-simulations.git
 cd quantum-simulation
+```
 
 ### 2. Install dependencies
 ```bash
 pip install -r requirements.txt
+```
 
 ### 3. Run master engine
 ```bash
 python main.py
+```
 
 Simply select 1 for the Entanglement workspace or 2 for the Teleportation pipeline when prompted directly in your terminal line!
