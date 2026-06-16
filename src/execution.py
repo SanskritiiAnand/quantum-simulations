@@ -40,3 +40,16 @@ def run_primitive_sampler(circuit: QuantumCircuit, total_shots: int = 4000) -> d
     data_pub = result[0].data
     register_name = list(data_pub.keys())[0] 
     return data_pub[register_name].get_counts()
+
+def run_simulation_with_memory(circuit: QuantumCircuit, shots: int = 1024) -> list:
+    """
+    Executes a circuit on the AerSimulator and tracks individual shot data sequences 
+    by setting memory=True. Returns the raw bitstring list array.
+    """
+    sim = AerSimulator()
+    # Transpilation handles conditional dynamic if_test architectures flawlessly
+    tqc = transpile(circuit, sim)
+    
+    job = sim.run(tqc, shots=shots, memory=True)
+    result = job.result()
+    return result.get_memory()
