@@ -9,7 +9,8 @@ def create_bell_state_circuit() -> QuantumCircuit:
     qc.cx(0, 1)    # Apply CNOT from qubit 0 to qubit 1
     qc.measure_all()
     return qc
----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 from qiskit import QuantumCircuit
 from qiskit.visualization import circuit_drawer
 
@@ -29,7 +30,8 @@ def save_or_show_circuit_layout(circuit: QuantumCircuit):
     """
     fig = circuit_drawer(circuit, output="mpl", plot_barriers=False)
     return fig
---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 
 def create_teleportation_circuit() -> QuantumCircuit:
@@ -68,5 +70,43 @@ def create_teleportation_circuit() -> QuantumCircuit:
     # 6. Transform Bob's qubit back to computational basis to verify transfer
     qc.h(q_reg[2])
     qc.measure(q_reg[2], c_reg[2])
+    
+    return qc
+
+    
+def create_labeled_teleportation_circuit() -> QuantumCircuit:
+    """
+    Builds a 3-qubit teleportation circuit with custom section barriers
+    and complete conditional feed-forward recovery gates (X and Z).
+    """
+    q_reg = QuantumRegister(3, name='q')
+    c_reg = ClassicalRegister(3, name='c')
+    qc = QuantumCircuit(q_reg, c_reg)
+
+    # Alice: Message Preparation (|+) state)
+    qc.h(q_reg[0])
+    qc.barrier(label="Msg Prep")
+
+    # EPR Bell Pair creation
+    qc.h(q_reg[1])
+    qc.cx(q_reg[1], q_reg[2])
+    qc.barrier(label="Bell Pair")
+
+    # Alice's Entangling Operations
+    qc.cx(q_reg[0], q_reg[1])
+    qc.h(q_reg[0])
+    qc.barrier(label="Alice's Ops")
+
+    # Mid-circuit measurement channel mapping
+    qc.measure(q_reg[0], c_reg[0])
+    qc.measure(q_reg[1], c_reg[1])
+    qc.barrier(label="Alice's Meas")
+
+    # Bob's Complete Conditional Recovery Protocol
+    with qc.if_test((c_reg[1], 1)):
+        qc.x(q_reg[2])
+    with qc.if_test((c_reg[0], 1)):
+        qc.z(q_reg[2])
+    qc.barrier(label="Bob's Recovery")
     
     return qc
