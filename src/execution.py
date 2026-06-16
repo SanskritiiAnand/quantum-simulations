@@ -18,6 +18,7 @@ def run_local_simulation(circuit: QuantumCircuit, shots: int = 4096) -> dict:
     counts = result.get_counts(tqc)
     return counts
 
+
 from qiskit.primitives import StatevectorSampler
 
 def run_local_simulation(circuit: QuantumCircuit, shots: int = 4096) -> dict:
@@ -41,6 +42,7 @@ def run_primitive_sampler(circuit: QuantumCircuit, total_shots: int = 4000) -> d
     register_name = list(data_pub.keys())[0] 
     return data_pub[register_name].get_counts()
 
+
 def run_simulation_with_memory(circuit: QuantumCircuit, shots: int = 1024) -> list:
     """
     Executes a circuit on the AerSimulator and tracks individual shot data sequences 
@@ -53,3 +55,20 @@ def run_simulation_with_memory(circuit: QuantumCircuit, shots: int = 1024) -> li
     job = sim.run(tqc, shots=shots, memory=True)
     result = job.result()
     return result.get_memory()
+
+
+from qiskit.quantum_info import Statevector
+
+def extract_circuit_statevector(circuit: QuantumCircuit) -> Statevector:
+    """
+    Clones the target circuit framework, appends a statevector save command, 
+    and simulates it locally to return the full uncollapsed quantum statevector.
+    """
+    qc_snapshot = circuit.copy()
+    qc_snapshot.save_statevector()
+    
+    sim = AerSimulator()
+    # Transpile ensuring conditional elements are optimized for backend matrix execution
+    tqc = transpile(qc_snapshot, sim)
+    result = sim.run(tqc).result()
+    return result.get_statevector()
