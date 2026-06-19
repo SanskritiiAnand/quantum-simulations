@@ -111,6 +111,7 @@ def create_labeled_teleportation_circuit() -> QuantumCircuit:
     
     return qc
 
+
 def create_dj_oracle(num_qubits: int, mode: str = "balanced") -> QuantumCircuit:
     """
     Generates a Deutsch-Jozsa oracle circuit for 'num_qubits' input lines.
