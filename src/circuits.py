@@ -110,3 +110,55 @@ def create_labeled_teleportation_circuit() -> QuantumCircuit:
     qc.barrier(label="Bob's Recovery")
     
     return qc
+
+def create_dj_oracle(num_qubits: int, mode: str = "balanced") -> QuantumCircuit:
+    """
+    Generates a Deutsch-Jozsa oracle circuit for 'num_qubits' input lines.
+    Modes:
+      - 'constant': Returns 0 or 1 for all inputs.
+      - 'balanced': Returns 0 for half the states, 1 for the other half.
+    """
+    oracle_circuit = QuantumCircuit(num_qubits + 1, name=f"DJ_Oracle_{mode.capitalize()}")
+    
+    if mode == "constant":
+        import random
+        if random.choice([True, False]):
+            oracle_circuit.x(num_qubits)
+            
+    elif mode == "balanced":
+        for qubit in range(num_qubits):
+            oracle_circuit.cx(qubit, num_qubits)
+            
+    return oracle_circuit
+
+def create_deutsch_jozsa_circuit(num_qubits: int, mode: str = "balanced") -> QuantumCircuit:
+    """
+    Assembles the full Deutsch-Jozsa algorithm layout by preparing superpositions,
+    embedding the target oracle, and applying the final decoding Hadamard gates.
+    """
+    qc = QuantumCircuit(num_qubits + 1, num_qubits)
+    
+    # 1. Initialize target qubit to |1>
+    qc.x(num_qubits)
+    qc.barrier(label="Initialization")
+    
+    # 2. Put all qubits into a superposition (|H> on inputs, |-> on target for phase kickback)
+    for q in range(num_qubits + 1):
+        qc.h(q)
+    qc.barrier(label="Superposition")
+    
+    # 3. Append the chosen hidden Oracle
+    oracle = create_dj_oracle(num_qubits, mode=mode)
+    qc.compose(oracle, inplace=True)
+    qc.barrier(label="Oracle Injection")
+    
+    # 4. Apply final Hadamards to the input lines to decode interference paths
+    for q in range(num_qubits):
+        qc.h(q)
+    qc.barrier(label="Interference")
+    
+    # 5. Measure the input qubits
+    for q in range(num_qubits):
+        qc.measure(q, q)
+        
+    return qc
