@@ -30,6 +30,13 @@ An advanced 3-qubit implementation demonstrating the transfer of an unknown quan
 #### Results
 By initializing Alice's qubit into a superposition state and performing a computational-basis rotation on Bob's terminal, a dual-bin shot memory histogram confirms identical probability states— verifying flawless state transfer across 1,024 shots.
 
+### 3. Deutsch-Jozsa Algorithm
+Demonstrates structural exponential quantum speedup over classical methods using an n-bit function space evaluator. By exploiting phase kickback mechanics over custom-synthesized mathematical black boxes (oracles), the suite evaluates whether a hidden mapping structure is uniform (constant) or split (balanced) using only a single operational execution query.
+
+#### Results
+* **Constant Verification:** Yields a 100% computational reading concentrated squarely on the ground state vector string `000`.
+* **Balanced Verification:** Resolves entirely into active non-zero configurations (e.g., `111`), completely bypassing the ground state.
+
 ---
 
 ## Setup & Installation
@@ -50,4 +57,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis- when prompted, directly in your terminal line.
+Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis; 4 for Deutsch-Jozsa algorithm - when prompted, directly in your terminal line.
