@@ -54,6 +54,8 @@ When executed using the local simulation layer for **1024 shots**, the computati
 ```bash
 git clone https://github.com/SanskritiiAnand/quantum-simulations.git
 cd quantum-simulations
+
+-- If git not pre-installed: Click 'Code' at top of the page, download ZIP folder, extract the files and open them in terminal/IDE --
 ```
 
 ### 2. Configure virtual environment
