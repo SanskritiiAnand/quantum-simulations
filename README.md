@@ -53,15 +53,25 @@ When executed using the local simulation layer for **1024 shots**, the computati
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/SanskritiiAnand/quantum-simulations.git
-cd quantum-simulation
+cd quantum-simulations
 ```
 
-### 2. Install dependencies
+### 2. Configure virtual environment
+```bash
+Windowws:
+python -m venv venv
+venv\Scripts\activate
+Mac/Linux:
+python -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Run master engine
+### 4. Run master engine
 ```bash
 python main.py
 ```
