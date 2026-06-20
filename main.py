@@ -4,6 +4,7 @@ from src.circuits import (create_bell_state_circuit,
                           create_teleportation_circuit, 
                           create_labeled_teleportation_circuit,
                           create_deutsch_jozsa_circuit,
+                          creat_bernstein_vazirani_circuit,
                           save_or_show_circuit_layout)
 from src.execution import (run_primitive_sampler, 
                            run_simulation_with_memory, 
@@ -77,6 +78,34 @@ def run_deutsch_jozsa_workflow():
     print("\nDisplaying measurement profile distribution...")
     plot_final_verification_counts(counts, title=f"Deutsch-Jozsa Output ({mode.capitalize()} Oracle)")
 
+def run_bernstein_vazirani_workflow():
+    print("\n--- Starting Bernstein-Vazirani Algorithm Suite ---")
+    
+    user_input = input("Enter a binary string to hide (or press Enter for default '1001'): ").strip()
+    hidden_str = user_input if user_input and all(c in '01' for c in user_input) else "1001"
+    
+    print(f"\nConstructing workspace for hidden parameter string: '{hidden_str}'...")
+    bv_circuit = create_bernstein_vazirani_circuit(hidden_str)
+    print(bv_circuit)
+    
+    print("Rendering circuit diagram architecture...")
+    _ = save_or_show_circuit_layout(bv_circuit)
+    plt.show(block=True)
+    
+    print(f"Executing circuit on AerSimulator engine (1024 shots)...")
+    counts = run_local_simulation(bv_circuit, shots=1024)
+    print(f"Executing counts array: {counts}")
+    
+    if hidden_str in counts and counts[hidden_str] == 1024:
+        print(f"\n[ANALYSIS]: Final registration state is strictly |{hidden_str}>")
+        print(">>>> SUCCESS: Hidden bitstring extracted perfectly in one single step.")
+    else:
+        print("\n[ANALYSIS]: Mismatch or statistical dispersion detected.")
+        print(">>>> FAILURE")
+        
+    print("\nDisplaying measurement profile distribution...")
+    plot_final_verification_counts(counts, title=f"Bernstein-Vazirani Output (Secret: {hidden_str})")
+
 def main():
     print("====================================================")
     print("               Modular Quantum Engine               ")
@@ -86,12 +115,13 @@ def main():
     print("2: Run Quantum Teleportation Protocol (Shot Memory Analysis)")
     print("3: Run Quantum Teleportation Protocol (QSphere Phase Tracking)")
     print("4: Run Deutsch-Jozsa Quantum Speedup Verification")
+    print("5: Run Bernstein-Vazirani Single-Query Target Capture")
     print("====================================================")
     
     if len(sys.argv) > 1:
         choice = sys.argv[1].strip()
     else:
-        choice = input("Select an option (1, 2, 3, or 4): ").strip()
+        choice = input("Select an option (1, 2, 3, 4, 5): ").strip()
         
     if choice == "1":
         run_entanglement_workflow()
@@ -101,8 +131,10 @@ def main():
         run_qsphere_teleportation_workflow()
     elif choice == "4":
         run_deutsch_jozsa_workflow()
+    elif choice == "5":
+        run_bernstein_vazirani_workflow()
     else:
-        print(f"Invalid option '{choice}'. Please select '1', '2', '3', or '4'.")
+        print(f"Invalid option '{choice}'. Please select '1', '2', '3', '4', or '5'.")
 
 if __name__ == "__main__":
     main()
