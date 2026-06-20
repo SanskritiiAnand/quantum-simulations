@@ -163,3 +163,50 @@ def create_deutsch_jozsa_circuit(num_qubits: int, mode: str = "balanced") -> Qua
         qc.measure(q, q)
         
     return qc
+
+
+def create_bv_oracle(hidden_str: str) -> QuantumCircuit:
+    """
+    Generates a hidden Bernstein-Vazirani oracle circuit
+    """
+    num_qubits = len(hidden_str)
+    oracle_circuit = QuantumCircuit(num_qubits + 1, name=f"Oracle_BV_{hidden_str}")
+    
+    # Iterate through the bit string
+    for index, bit in enumerate(reversed(hidden_str)):
+        if bit == '1':
+            oracle_circuit.cx(index, num_qubits)
+
+    return oracle_circuit
+
+def create_bernstein_vazirani_circuit(hidden_str: str) -> QuantumCircuit:
+    """
+    Assembles the complete Bernstein-Vazirani algorithm workspace layout
+    """
+    num_qubits = len(hidden_str)
+    qc = QuantumCircuit(num_qubits + 1, num_qubits)
+
+    # Initialize target qubit to |1>
+    qc.x(num_qubits)
+    qc.barrier(label="Initialization")
+
+    # Apply Hadamards to all qubits (superposition + phase kickback)
+    for q in range(num_qubits + 1):
+        qc.h(q)
+    qc.barrier(label="Superposition")
+
+    # Inject the chosen hidden oracle
+    oracle = create_bv_oracle(hidden_str)
+    qc.compose(oracle, inplace=True)
+    qc.barrier(label="Oracle_Injection")
+
+    # Final Hadamards to input qubits to decode state phase shifts
+    for q in range(num_qubits):
+        qc.h(q)
+    qc.barrier(label="Interference")
+
+    # Read input register
+    for q in range(num_qubits):
+        qc.measure(q, q)
+        
+    return qc
