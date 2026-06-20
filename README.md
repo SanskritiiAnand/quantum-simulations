@@ -37,6 +37,15 @@ Demonstrates structural exponential quantum speedup over classical methods using
 * **Constant Verification:** Yields a 100% computational reading concentrated squarely on the ground state vector string `000`.
 * **Balanced Verification:** Resolves entirely into active non-zero configurations (e.g., `111`), completely bypassing the ground state.
 
+### 4. Bernstein-Vazirani Algorithm
+Demonstrates a striking case of quantum speedup where a hidden binary string $s \in \{0,1\}^n$ is extracted from a black-box oracle function $f(x) = s \cdot x \pmod 2$ in a **single operational execution query**. While a classical machine would require $n$ individual bitwise queries to reliably guess the string, the Bernstein-Vazirani variant exploits phase kickback mechanics to reconstruct the entire string simultaneously.
+
+#### Results
+
+When executed using the local simulation layer for **1024 shots**, the computational measurement results demonstrate a perfect probability lock on the secret key configuration, completely bypassing classical query limitations:
+
+* **Secret String Verification:** Reconstructing a sample hidden mask string (e.g., `1001`) yields a 100% concentrated readout returning exactly $|1001\rangle$, proving deterministic extraction
+
 ---
 
 ## Setup & Installation
@@ -57,4 +66,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis; 4 for Deutsch-Jozsa algorithm - when prompted, directly in your terminal line.
+Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis; 4 for Deutsch-Jozsa algorithm; 5 for Bernstein-Vazirani algorithm - when prompted, directly in your terminal line.
