@@ -46,6 +46,16 @@ When executed using the local simulation layer for **1024 shots**, the computati
 
 * **Secret String Verification:** Reconstructing a sample hidden mask string (e.g., `1001`) yields a 100% concentrated readout returning exactly $|1001\rangle$, proving deterministic extraction
 
+### 5. Grover's Search Algorithm
+
+Demonstrates unstructured database search capabilities using **Amplitude Amplification**. Over an item space $N = 4$ constructed across a 2-qubit system, a target address state vector is dynamically marked by a phase oracle using a Controlled-Z ($CZ$) inversion framework. By running a geometric matrix reflection step via the Grover Diffuser, the system shifts state probabilities, transforming a uniform probability field into a 100% focused readout spike on the targeted unindexed location parameter using only a single query step— achieving an analytical quadratic optimization boundary over classical $O(N)$ scanning models.
+
+#### Results
+
+Running the algorithm workspace pipeline against individual system address parameters generates high-density reading arrays confirming total probability focus configuration states:
+
+* **Target Target Identification:** Looking for target parameter states (e.g., $|10\rangle$ or $|11\rangle$) evaluates cleanly down to 1024 standalone target output registration arrays, validating complete mathematical convergence.
+
 ---
 
 ## Setup & Installation
@@ -78,4 +88,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis; 4 for Deutsch-Jozsa algorithm; 5 for Bernstein-Vazirani algorithm - when prompted, directly in your terminal line.
+Select 1 for Entanglement workspace; 2 for Teleportation pipeline; 3 for QSphere Phase Tracking analysis; 4 for Deutsch-Jozsa algorithm; 5 for Bernstein-Vazirani algorithm; 6 for Grover's Search algorithm - when prompted, directly in your terminal line.
