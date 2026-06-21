@@ -210,3 +210,75 @@ def create_bernstein_vazirani_circuit(hidden_str: str) -> QuantumCircuit:
         qc.measure(q, q)
         
     return qc
+
+
+def create_grover_oracle(target_str: str) -> QuantumCircuit:
+    """
+    Generates a 2-qubit phase oracle that flips the sign of the target state. 
+    Available targets: '00', '01', '10', '11'
+    """
+    oracle_ckt = QuantumCircuit(2, name=f"Oracle_Grover_{target_str}")
+
+    # Apply X gates to flip target bit configuration to |11> to utilize standard CZ phase flip 
+    if target_str == "00":
+        oracle_ckt.x([0, 1])
+    elif target_str == "01":
+        oracle_ckt.x(1)  # little-endian ordering 
+    elif target_str == "10":
+        oracle_ckt.x(0)
+    
+    oracle_ckt.cz(0, 1)  # CZ flips sign of |11> state
+
+    # Revert X gates to restore the base states
+    if target_str == "00":
+        oracle_ckt.x([0, 1])
+    elif target_str == "01":
+        oracle_ckt.x(1)
+    elif target_str == "10":
+        oracle_ckt.x(0)
+    
+    return oracle_ckt
+
+def create_grover_diffuser() -> QuantumCircuit:
+    """
+    Generates the standard 2-qubit grover diffuser (inversion about the mean)
+    """
+    diffuser = QuantumCircuit(2, name="Diffuser")
+
+    # Transform out of superposition basis
+    diffuser.h([0, 1])
+    diffuser.x([0, 1])
+
+    # Apply phase flip to the ground state |00>
+    diffuser.cz(0, 1)
+
+    # Restore states back to computational basis
+    diffuser.x([0, 1])
+    diffuser.h([0, 1])
+
+    return diffuser
+
+def create_grover_search_circuit(target_str: str) -> QuantumCircuit:
+    """
+    Assembles the complete 2-qubit Grover Search circuit workspace
+    """
+    qc = QuantumCircuit(2, 2)
+
+    # Initialize qubits to equal superposition state
+    qc.h([0, 1])
+    qc.barrier(label="Superposition")
+
+    # Inject phase oracle to mark target state
+    oracle = create_grover_oracle(target_str)
+    qc.compose(oracle, inplace=True)
+    qc.barrier(label="Oracle_Marking")
+
+    # Apply diffuser to amplify target state's amplitude
+    diffuser = create_grover_diffuser()
+    qc.compose(diffuser, inplace=True)
+    qc.barrier(label="Amplitude_Amplification")
+
+    # Measure qubits
+    qc.measure([0, 1], [0, 1])
+    
+    return qc
