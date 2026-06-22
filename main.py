@@ -1,11 +1,16 @@
 import sys
+import math
+from fractions import Fraction
 import matplotlib.pyplot as plt
+
 from src.circuits import (create_bell_state_circuit, 
                           create_teleportation_circuit, 
                           create_labeled_teleportation_circuit,
                           create_deutsch_jozsa_circuit,
-                          create_grover_search_circuit
-                          creat_bernstein_vazirani_circuit,
+                          create_bernstein_vazirani_circuit,
+                          create_grover_search_circuit,
+                          create_simon_circuit,
+                          create_shor_circuit,
                           save_or_show_circuit_layout)
 from src.execution import (run_primitive_sampler, 
                            run_simulation_with_memory, 
@@ -123,11 +128,14 @@ def run_grover_search_workflow():
     _ = save_or_show_circuit_layout(grover_circuit)
     plt.show(block=True)
     
+    # Extract uncollapsed statevector for QSphere tracking
+    sv = extract_circuit_statevector(grover_circuit)
+    plot_qsphere_visualization(sv, title=f"Grover Search State Vector Space (Target: {target_str})")
+    
     print(f"Executing circuit on AerSimulator engine (1024 shots)...")
     counts = run_local_simulation(grover_circuit, shots=1024)
     print(f"Readout Counts Result: {counts}")
     
-    # Analysis Verification
     if target_str in counts and counts[target_str] == 1024:
         print(f"\n[ANALYSIS]: Target key state |{target_str}> amplified to maximum probability density.")
         print(">>>> SUCCESS: Grover's search successfully isolated the unindexed target item.")
@@ -138,9 +146,103 @@ def run_grover_search_workflow():
     print("\nDisplaying measurement profile distribution...")
     plot_final_verification_counts(counts, title=f"Grover Search Results (Target: {target_str})")
 
+def run_simon_workflow():
+    print("\n--- Starting Simon's Hidden Period Mask Suite ---")
+    print("Select a 2-bit hidden bitstring mask 's':")
+    print("Options: '00', '01', '10', or '11'")
+    user_input = input("Enter hidden mask (default '11'): ").strip()
+    hidden_mask = user_input if user_input in ["00", "01", "10", "11"] else "11"
+    
+    print(f"\nConstructing Simon's Period Finder workspace for mask: s = {hidden_mask}...")
+    simon_circuit = create_simon_circuit(hidden_mask)
+    print(simon_circuit)
+    
+    print("Rendering circuit diagram architecture...")
+    _ = save_or_show_circuit_layout(simon_circuit)
+    plt.show(block=True)
+    
+    print(f"Executing circuit on AerSimulator engine (1024 shots)...")
+    counts = run_local_simulation(simon_circuit, shots=1024)
+    print(f"Readout Constraint Counts: {counts}")
+    
+    print("\n[ANALYSIS]: Validating orthogonality condition (b . s = 0 mod 2)...")
+    valid = True
+    for bitstring in counts:
+        b_vec = [int(ch) for ch in bitstring]
+        s_vec = [int(ch) for ch in hidden_mask]
+        dot_product = sum(b * s for b, s in zip(b_vec, s_vec)) % 2
+        print(f" -> Measured string |{bitstring}>: dot product with mask {hidden_mask} = {dot_product}")
+        if dot_product != 0:
+            valid = False
+            
+    if valid:
+        print(f">>>> SUCCESS: Measured equations deterministically isolate hidden string s = {hidden_mask}")
+    else:
+        print(">>>> FAILURE: Out-of-bounds constraint leaking detected.")
+        
+    print("\nDisplaying measurement profile distribution...")
+    plot_final_verification_counts(counts, title=f"Simon's Algorithm Verification (Mask: {hidden_mask})")
+
+def run_shor_workflow():
+    print("\n--- Starting Shor's Order Finding & Factoring Suite ---")
+    print("Factoring Target: N = 15")
+    print("Available Coprime Bases: 2, 4, 7, 8, 11, 13")
+    user_input = input("Select a base 'a' (default '7'): ").strip()
+    a = int(user_input) if user_input in ["2", "4", "7", "8", "11", "13"] else 7
+    
+    print(f"\nAssembling Phase Estimation circuit for a = {a} mod 15...")
+    shor_circuit = create_shor_circuit(a)
+    print(shor_circuit)
+    
+    print("Rendering circuit diagram architecture...")
+    _ = save_or_show_circuit_layout(shor_circuit)
+    plt.show(block=True)
+    
+    # Extract uncollapsed statevector for QSphere tracking
+    sv = extract_circuit_statevector(shor_circuit)
+    plot_qsphere_visualization(sv, title=f"Shor's Core Periodic State Profile (N=15, a={a})")
+    
+    print(f"Executing quantum registers on AerSimulator engine...")
+    counts = run_local_simulation(shor_circuit, shots=1024)
+    print(f"\n[QUANTUM CORE] Measured Bitstring Counts: {counts}")
+    
+    print("\n[CLASSICAL POST-PROCESSING] Analyzing measured phases...")
+    factors_found = set()
+    N = 15
+    
+    for bitstring in counts:
+        decimal_val = int(bitstring, 2)
+        if decimal_val == 0:
+            continue
+            
+        phase = decimal_val / 8  # 2^3 counting qubits
+        frac = Fraction(phase).limit_denominator(N)
+        r = frac.denominator
+        
+        print(f"-> State |{bitstring}> Dec: {decimal_val} => Phase: {phase} => Fraction: {frac} => Guessed Period r = {r}")
+        
+        if r % 2 != 0 or pow(a, r//2, N) == N - 1:
+            continue
+            
+        factor1 = math.gcd(pow(a, r//2) - 1, N)
+        factor2 = math.gcd(pow(a, r//2) + 1, N)
+        
+        if factor1 not in [1, N]: factors_found.add(factor1)
+        if factor2 not in [1, N]: factors_found.add(factor2)
+
+    print("\n========================================================")
+    if len(factors_found) >= 2:
+        print(f">>>> SUCCESS: Non-trivial factors of {N} discovered: {list(factors_found)}")
+    else:
+        print(">>>> CLASSICAL POST-PROCESSING COMPLETE (Try another base base if factors missed)")
+    print("========================================================")
+    
+    print("\nDisplaying measurement profile distribution...")
+    plot_final_verification_counts(counts, title=f"Shor's Period Finder Core (N=15, a={a})")
+
 def main():
     print("====================================================")
-    print("               Modular Quantum Engine               ")
+    print("                Modular Quantum Engine              ")
     print("====================================================")
     print("Available experiments:")
     print("1: Run Quantum Entanglement Simulation (Bell State)")
@@ -149,12 +251,14 @@ def main():
     print("4: Run Deutsch-Jozsa Quantum Speedup Verification")
     print("5: Run Bernstein-Vazirani Single-Query Target Capture")
     print("6: Run Grover's Search Algorithm (Amplitude Amplification Database)")
+    print("7: Run Simon's Period Hidden Mask Extraction")
+    print("8: Run Shor's Order Finding & Prime Factorization Pipeline")
     print("====================================================")
     
     if len(sys.argv) > 1:
         choice = sys.argv[1].strip()
     else:
-        choice = input("Select an option (1, 2, 3, 4, 5): ").strip()
+        choice = input("Select an option (1-8): ").strip()
         
     if choice == "1":
         run_entanglement_workflow()
@@ -168,8 +272,12 @@ def main():
         run_bernstein_vazirani_workflow()
     elif choice == "6":
         run_grover_search_workflow()
+    elif choice == "7":
+        run_simon_workflow()
+    elif choice == "8":
+        run_shor_workflow()
     else:
-        print(f"Invalid option '{choice}'. Please select '1', '2', '3', '4', '5', or '6'.")
+        print(f"Invalid option '{choice}'. Please select an option between 1 and 8.")
 
 if __name__ == "__main__":
     main()
