@@ -153,8 +153,12 @@ def run_simon_workflow():
     user_input = input("Enter hidden mask (default '11'): ").strip()
     hidden_mask = user_input if user_input in ["00", "01", "10", "11"] else "11"
     
-    print(f"\nConstructing Simon's Period Finder workspace for mask: s = {hidden_mask}...")
+    print(f"\n=========================================================")
+    print(f"Running Simon's algorithm, targeting mask s = {hidden_mask}")
+    print(f"=========================================================")
+    
     simon_circuit = create_simon_circuit(hidden_mask)
+    print("\n[CIRCUIT ARCHITECTURE]:")
     print(simon_circuit)
     
     print("Rendering circuit diagram architecture...")
@@ -163,25 +167,30 @@ def run_simon_workflow():
     
     print(f"Executing circuit on AerSimulator engine (1024 shots)...")
     counts = run_local_simulation(simon_circuit, shots=1024)
-    print(f"Readout Constraint Counts: {counts}")
+    print(f"Executing counts array: {counts}")
     
-    print("\n[ANALYSIS]: Validating orthogonality condition (b . s = 0 mod 2)...")
-    valid = True
-    for bitstring in counts:
-        b_vec = [int(ch) for ch in bitstring]
-        s_vec = [int(ch) for ch in hidden_mask]
-        dot_product = sum(b * s for b, s in zip(b_vec, s_vec)) % 2
-        print(f" -> Measured string |{bitstring}>: dot product with mask {hidden_mask} = {dot_product}")
-        if dot_product != 0:
-            valid = False
-            
-    if valid:
-        print(f">>>> SUCCESS: Measured equations deterministically isolate hidden string s = {hidden_mask}")
+    # Analysis Discovery Verification matching your standalone script logic
+    valid_states = []
+    if hidden_mask == "00":
+        valid_states = ["00", "01", "10", "11"]
+    elif hidden_mask == "11":
+        valid_states = ["00", "11"]
+    elif hidden_mask == "10":
+        valid_states = ["00", "01"]  # (0*1 + 0*0 = 0) and (0*1 + 1*0 = 0)
+    elif hidden_mask == "01":
+        valid_states = ["00", "10"]  # (0*0 + 0*1 = 0) and (1*0 + 0*1 = 0)
+
+    leakage = [state for state in counts if state not in valid_states]
+
+    if not leakage and all(state in counts for state in valid_states):
+        print(f"\n[ANALYSIS]: Readout localized strictly to equations satisfying b.s = 0 (mod 2)")
+        print(f">>>> SUCCESS: Collected constraints successfully solve to hidden period mask s = {hidden_mask}!")
     else:
-        print(">>>> FAILURE: Out-of-bounds constraint leaking detected.")
+        print("\n[ANALYSIS]: State leakage or incorrect phase convergence detected")
+        print(">>>> FAILURE")
         
     print("\nDisplaying measurement profile distribution...")
-    plot_final_verification_counts(counts, title=f"Simon's Algorithm Verification (Mask: {hidden_mask})")
+    plot_final_verification_counts(counts, title=f"Simon's Algorithm (Hidden Mask: {hidden_mask})")
 
 def run_shor_workflow():
     print("\n--- Starting Shor's Order Finding & Factoring Suite ---")
