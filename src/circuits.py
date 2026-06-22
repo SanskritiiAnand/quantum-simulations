@@ -261,30 +261,29 @@ def create_grover_search_circuit(target_str: str) -> QuantumCircuit:
 
 def create_simon_oracle(hidden_mask: str) -> QuantumCircuit:
     """
-    Generates a 2-qubit input, 2-qubit target oracle that maps |x>|0> -> |x>|f(x)>
-    such that f(x) = f(y) if and only if x XOR y = hidden_mask.
+    Generates a dynamic 2-qubit Simon's algorithm oracle for 2-to-1 mapping.
+    Works for any mask: '00', '01', '10', '11'
     """
-    if hidden_mask not in ["00", "01", "10", "11"]:
-        raise ValueError("Hidden mask must be a 2-bit binary string.")
-        
-    oracle = QuantumCircuit(4, name=f"Simon_Oracle_{hidden_mask}")
+    oracle_ckt = QuantumCircuit(4, name=f"Oracle_Simon_{hidden_mask}")
+
+    # 1:1 copy of input register to auxiliary register using CX gates
+    if hidden_mask == "00":
+        oracle_ckt.cx(0, 2)
+        oracle_ckt.cx(1, 3)
     
-    #Copy input register to target register
-    oracle.cx(0, 2)
-    oracle.cx(1, 3)
+    elif hidden_mask == "01":
+        oracle_ckt.cx(1, 3) # f(x) must be independent of q_0, only copy q_1
     
-    #Condition mapping based on hidden mask vector strings
-    if hidden_mask == "01":
-        oracle.cx(0, 3)
     elif hidden_mask == "10":
-        oracle.cx(1, 2)
+        oracle_ckt.cx(0, 2) # f(x) must be independent of q_1, only copy q_0
+    
     elif hidden_mask == "11":
-        oracle.cx(0, 2)
-        oracle.cx(0, 3)
-        oracle.cx(1, 2)
-        oracle.cx(1, 3)
-        
-    return oracle
+        oracle_ckt.cx(0, 2)
+        oracle_ckt.cx(1, 3)
+        oracle_ckt.cx(0, 3)
+        oracle_ckt.cx(1, 2)
+
+    return oracle_ckt
 
 def create_simon_circuit(hidden_mask: str) -> QuantumCircuit:
     """Assembles the complete 4-qubit Simon's Period Finder circuit workspace."""
