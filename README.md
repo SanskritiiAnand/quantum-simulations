@@ -94,7 +94,7 @@ cd quantum-simulations
 
 ### 2. Configure virtual environment
 ```bash
-Windowws:
+Windows:
 python -m venv venv
 venv\Scripts\activate
 Mac/Linux:
